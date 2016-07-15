@@ -1,0 +1,142 @@
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-",
+  message = FALSE,
+  warning = FALSE
+)
+
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+## 2016 Stack Overflow Developer Survey Results
+
+[![Travis-CI Build Status](https://travis-ci.org/.svg?branch=master)](https://travis-ci.org/)
+
+Results of the [Stack Overflow Developer Survey](http://stackoverflow.com/research/developer-survey-2016), wrapped in a convenient R package for analysis.
+
+Install using [devtools](https://github.com/hadley/devtools):
+
+```{r eval = FALSE}
+devtools::install_github("dgrtwo/stacksurveyr")
+```
+
+### Data
+
+This package shares the survey results as two datasets. First is `stack_survey`:
+
+```{r}
+library(dplyr)
+library(stacksurveyr)
+stack_survey
+```
+
+This contains one row for each survey respondent and one column for each question. It follows the format of the the released survey dataset at [stackoverflow.com/research](http://stackoverflow.com/research), with some [post-processing](data-raw) to turn questions with a natural order (such as "experience range") into ordered factors.
+
+The package also contains a schema data frame describing each of the columns in `stack_survey`, including the original text of each question:
+
+```{r}
+stack_schema
+```
+
+### Examples: Basic exploration
+
+There's a lot of simple questions we can answer using this data, particularly using the dplyr package. For example, we can examine the most common occupations among respondents:
+
+```{r}
+stack_survey %>%
+  count(occupation, sort = TRUE)
+```
+
+We can also use `group_by` and `summarize` to connect between columns- for example, finding the highest paid (on average) occupations:
+
+```{r}
+salary_by_occupation <- stack_survey %>%
+  filter(occupation != "other") %>%
+  group_by(occupation) %>%
+  summarize(average_salary = mean(salary_midpoint, na.rm = TRUE)) %>%
+  arrange(desc(average_salary))
+
+salary_by_occupation
+```
+
+This can be visualized in a bar plot:
+
+```{r fig.width = 8, fig.height = 6}
+library(ggplot2)
+library(scales)
+
+salary_by_occupation %>%
+  mutate(occupation = reorder(occupation, average_salary)) %>%
+  ggplot(aes(occupation, average_salary)) +
+  geom_bar(stat = "identity") +
+  ylab("Average salary (USD)") +
+  scale_y_continuous(labels = dollar_format()) +
+  coord_flip()
+```
+
+### Examples: Multi-response answers
+
+`r sum(stack_schema$type == "multi")` of the questions allow multiple responses, as can be noted in the `stack_schema` variable:
+
+```{r}
+stack_schema %>%
+  filter(type == "multi")
+```
+
+In these cases, the responses are given delimited by `; `. For example, see the `tech_do` column (""Which of the following languages or technologies have you done extensive development with in the last year?"):  
+
+```{r}
+stack_survey %>%
+  filter(!is.na(tech_do)) %>%
+  select(tech_do)
+```
+
+Often, these columns are easier to work with and analyze when they are "unnested" into one user-answer pair per row. The package provides the `stack_multi` function as a shortcut for that unnestting:
+
+```{r}
+stack_multi("tech_do")
+```
+
+For example, we could find the most common answers:
+
+```{r}
+stack_multi("tech_do") %>%
+  count(tech = answer, sort = TRUE)
+```
+
+We can join this with the `stack_survey` dataset using the `respondent_id` column. For example, we could look at the most common development technologies used by data scientists:
+
+```{r}
+stack_survey %>%
+  filter(occupation == "Data scientist") %>%
+  inner_join(stack_multi("tech_do"), by = "respondent_id") %>%
+  count(answer, sort = TRUE)
+```
+
+Or we could find out the average age and salary of people using each technology, and compare them:
+
+```{r}
+stack_survey %>%
+  inner_join(stack_multi("tech_do")) %>%
+  group_by(answer) %>%
+  summarize_each(funs(mean(., na.rm = TRUE)), age_midpoint, salary_midpoint) %>%
+  ggplot(aes(age_midpoint, salary_midpoint)) +
+  geom_point() +
+  geom_text(aes(label = answer), vjust = 1, hjust = 1) +
+  xlab("Average age of people using this technology") +
+  ylab("Average salary (USD)") +
+  scale_y_continuous(labels = dollar_format())
+```
+
+### License
+
+The package, code, and examples are licensed under the GPL-3 license.
+
+The survey data itself (which is contained in the [data-raw](data-raw) directory and available online [here](http://stackoverflow.com/research)), is made available by Stack Exchange, Inc under the [Open Database License (ODbL)](http://opendatacommons.org/licenses/odbl/1.0/). Any rights in individual contents of the database are licensed under the [Database Contents License (ODbL)](http://opendatacommons.org/licenses/odbl/1.0/)
+
+Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md). By participating in this project you agree to abide by its terms.

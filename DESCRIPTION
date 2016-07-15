@@ -1,0 +1,24 @@
+Package: stacksurveyr
+Type: Package
+Title: Stack Overflow 2016 Developer Survey Results
+Version: 0.1.0
+Authors@R: c(person("David", "Robinson", email = "drobinson@stackoverflow.com",
+    role = c("aut", "cre")))
+Maintainer: David Robinson <drobinson@stackoverflow.com>
+Description: Results of the Stack Overflow 2016 Developer Survey, as well as
+    the schema (including the full text of questions), as processed
+    data frames.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+VignetteBuilder: knitr
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown,
+    scales
+Imports:
+    dplyr,
+    tidyr,
+    stringr
+RoxygenNote: 5.0.1

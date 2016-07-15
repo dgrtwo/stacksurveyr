@@ -1,0 +1,167 @@
+---
+title: "Introduction to the 2016 Developer Survey Data"
+author: "David Robinson"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to the 2016 Developer Survey Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo = FALSE}
+library(knitr)
+opts_chunk$set(warning = FALSE, message = FALSE, fig.width = 6, fig.height = 6)
+
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+### Survey data
+
+This introduction shows some basic analyses you can perform with the surveystackr package, which shares the results of the [Stack Overflow 2016 Developer Survey](http://stackoverflow.com/research).
+
+The `stack_survey` data frame is the main dataset, and contains the results for each respondent. This is a moderately large dataset, so you usually want to import either the dplyr package or the [tibble](https://github.com/hadley/tibble) package to allow convenient printing:
+
+```{r}
+library(dplyr)
+library(stacksurveyr)
+
+stack_survey
+```
+
+While this is mostly identical to the publicly-available CSV, one important aspect is that it turns 
+
+```{r}
+levels(stack_survey$age_range)
+levels(stack_survey$experience_range)
+```
+
+Note that for each `_range` column (age, experience, salary, and company size), we've also added a `_midpoint` column. This makes it easy to calculate meaningful "average age" or "average salary".
+
+```{r}
+stack_survey %>%
+  select(salary_range, salary_midpoint, experience_range, experience_midpoint) 
+```
+
+### Basic exploration
+
+There's a lot of simple questions we can answer using this data, particularly with the dplyr package. For example, we can examine the most common occupations among respondents:
+
+```{r}
+stack_survey %>%
+  count(occupation, sort = TRUE)
+```
+
+We can also use `group_by` and `summarize` to connect between columns- for example, finding the highest paid (on average) occupations:
+
+```{r}
+salary_by_occupation <- stack_survey %>%
+  filter(!is.na(occupation), occupation != "other") %>%
+  group_by(occupation) %>%
+  summarize(average_salary = mean(salary_midpoint, na.rm = TRUE)) %>%
+  arrange(desc(average_salary))
+
+salary_by_occupation
+```
+
+This can be visualized in a bar plot:
+
+```{r}
+library(ggplot2)
+library(scales)
+
+salary_by_occupation %>%
+  mutate(occupation = reorder(occupation, average_salary)) %>%
+  ggplot(aes(occupation, average_salary)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = dollar_format()) +
+  coord_flip()
+```
+
+### Multi-response answers
+
+`r sum(stack_schema$type == "multi")` of the questions allow multiple responses, as can be noted in the `stack_schema` variable:
+
+```{r}
+stack_schema %>%
+  filter(type == "multi")
+```
+
+In these cases, the responses are given delimited by `; `. For example, see the `tech_do` column (""Which of the following languages or technologies have you done extensive development with in the last year?"):  
+
+```{r}
+stack_survey %>%
+  filter(!is.na(tech_do)) %>%
+  select(tech_do)
+```
+
+Often, these columns are easier to work with and analyze when they are "unnested" into one user-answer pair per row. The package provides the `stack_multi` as a shortcut for that unnestting:
+
+```{r}
+stack_multi("tech_do")
+```
+
+For example, we could find the most common answers with:
+
+```{r}
+stack_multi("tech_do") %>%
+  count(tech = answer, sort = TRUE)
+```
+
+We can join this with the `stack_survey` dataset using the `respondent_id` column. For example, we could look at the most common development technologies used by data scientists:
+
+```{r}
+stack_survey %>%
+  filter(occupation == "Data scientist") %>%
+  inner_join(stack_multi("tech_do"), by = "respondent_id") %>%
+  count(answer, sort = TRUE)
+```
+
+Or similarly, the most common developer environments:
+
+```{r}
+stack_survey %>%
+  filter(occupation == "Data scientist") %>%
+  inner_join(stack_multi("dev_environment"), by = "respondent_id") %>%
+  count(answer, sort = TRUE)
+```
+
+We could find out the average age and salary of people using each technology, and compare them:
+
+```{r}
+stack_survey %>%
+  inner_join(stack_multi("tech_do")) %>%
+  group_by(answer) %>%
+  summarize_each(funs(mean(., na.rm = TRUE)), age_midpoint, salary_midpoint) %>%
+  ggplot(aes(age_midpoint, salary_midpoint)) +
+  geom_point() +
+  geom_text(aes(label = answer), vjust = 1, hjust = 1) +
+  xlab("Average age of people using this technology") +
+  ylab("Average salary (USD)") +
+  scale_y_continuous(labels = dollar_format())
+```
+
+Finally, we could look at the percentage of each occupation who (ill-advisedly) self-identify as "ninjas":
+
+```{r}
+percent_ninja <- stack_survey %>%
+  filter(!is.na(occupation)) %>%
+  inner_join(stack_multi("self_identification")) %>%
+  group_by(occupation) %>%
+  mutate(total = n_distinct(respondent_id)) %>%
+  count(occupation, answer, total) %>%
+  mutate(percent = n / total) %>%
+  ungroup() %>%
+  filter(answer == "Ninja") %>%
+  arrange(desc(percent))
+
+percent_ninja
+
+ggplot(percent_ninja, aes(reorder(occupation, percent), percent)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = percent_format()) +
+  xlab("Occupation") +
+  ylab("% calling themself 'ninja'") +
+  coord_flip()
+```

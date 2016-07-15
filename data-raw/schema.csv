@@ -1,0 +1,67 @@
+column,type,question,description
+respondent_id,inferred,NA,Unique respondent ID (arbitrary)
+collector,inferred,NA,Respondent source
+country,single,In what country do you currently reside?,NA
+un_subregion,inferred,NA,Region inferred by country location (UN region)
+so_region,inferred,NA,Region inferred by country location (semi-arbitrary Stack Overflow region groupings)
+age_range,single,How old are you?,NA
+age_midpoint,inferred,NA,Age inferred by age range
+gender,single,What is your gender?,NA
+self_identification,multi,What do you consider yourself? (select all that apply),NA
+occupation,single,Which of the following best describes your occupation?,NA
+occupation_group,inferred,NA,Inferred from occupation
+experience_range,single,How many years of IT / programming experience do you have?,NA
+experience_midpoint,single,NA,Inferred from experience_range
+salary_range,single,What is your annual gross earnings or salary (including bonus) in USD?,NA
+salary_midpoint,inferred,NA,Inferred from salary_range
+big_mac_index,inferred,NA,Jan 2016 Big Mac Index for country from: http://www.economist.com/content/big-mac-index
+tech_do,multi,Which of the following languages or technologies have you done extensive development with in the last year? (select all that apply),NA
+tech_want,multi,Which of the following languages or technologies do you WANT to work with this year? (select all that apply),NA
+aliens,single,Do you believe in aliens?,NA
+programming_ability,single,"On a single of 1-10, how would you rate your programming ability?",NA
+employment_status,single,How would you describe your current employment status?,NA
+industry,single,How would you best describe the industry you currently work in?,NA
+company_size_range,single,What is the size of your company?,NA
+team_size_range,single,What is the size of your team?,NA
+women_on_team,single,How many women are on your team?,NA
+remote,single,Do you work remotely?,NA
+job_satisfaction,single,How satisfied are you with your current job(s)?,NA
+job_discovery,single,How did you discover your current job?,NA
+dev_environment,multi,What development environments do you use regularly? (select all that apply),NA
+commit_frequency,single,How frequently do you check-in or commit code?,NA
+hobby,single,"How much time per week do you spend programming as a hobby, or working on side projects or open-source?",NA
+dogs_vs_cats,single,Dogs or cats?,NA
+desktop_os,single,Which desktop operating system do you use most?,NA
+unit_testing,single,Is unit testing worth the effort?,NA
+rep_range,single,What is your current Stack Overflow reputation?,NA
+visit_frequency,single,How frequently do you read Stack Overflow questions or answers?,NA
+why_learn_new_tech,single,What is your primary motivation for learning new programming languages or technologies?,NA
+education,multi,What amount of formal or professional programming training have you received? (select all that apply),NA
+open_to_new_job,single,Are you currently looking for a job or open to new opportunities?,NA
+new_job_value,multi,When evaluating a new employment opportunity what's most important to you? (select up to 3),NA
+job_search_annoyance,single,What annoys you most when searching for a new job?,NA
+interview_likelihood,single,"If you applied to a job at Google, what do you think is the likelihood you would get an interview?",NA
+how_to_improve_interview_process,multi,How can companies improve the interview process? (select up to 3),NA
+star_wars_vs_star_trek,multi,Star Wars or Star Trek?,NA
+agree_tech,single,How much do you agree or disagree with the following statements?,I love the technologies I use at work.
+agree_notice,single,How much do you agree or disagree with the following statements?,Every day I notice things that can be improved by better software.
+agree_problemsolving,single,How much do you agree or disagree with the following statements?,I love problem solving.
+agree_diversity,single,How much do you agree or disagree with the following statements?,Diversity in the workplace is important.
+agree_adblocker,single,How much do you agree or disagree with the following statements?,I always use an ad blocker.
+agree_alcohol,single,How much do you agree or disagree with the following statements?,I occasionally drink alcohol while coding.
+agree_loveboss,single,How much do you agree or disagree with the following statements?,I love my boss.
+agree_nightcode,single,How much do you agree or disagree with the following statements?,I love coding late at night.
+agree_legacy,single,How much do you agree or disagree with the following statements?,I work with a lot of legacy code.
+agree_mars,single,How much do you agree or disagree with the following statements?,"I want to go to Mars right now, even if there's a chance I never come back."
+important_variety,single,What's important to you at work?,Working on a variety of projects
+important_control,single,What's important to you at work?,Having control over product decisions
+important_sameend,single,What's important to you at work?,Ending work at the same time every day
+important_newtech,single,What's important to you at work?,Learning new technologies
+important_buildnew,single,What's important to you at work?,Building something new
+important_buildexisting,single,What's important to you at work?,Improving existing applications
+important_promotion,single,What's important to you at work?,Getting promoted
+important_companymission,single,What's important to you at work?,Believing strongly in my company's mission
+important_wfh,single,What's important to you at work?,Working from home
+important_ownoffice,single,What's important to you at work?,Having my own office
+developer_challenges,multi,What are the biggest challenges you face as a developer? (select up to 3),NA
+why_stack_overflow,multi,Why do you use Stack Overflow? (select all that apply),NA
