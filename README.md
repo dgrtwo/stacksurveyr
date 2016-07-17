@@ -6,7 +6,14 @@
 
 [![Travis-CI Build Status](https://travis-ci.org/.svg?branch=master)](https://travis-ci.org/)
 
-Results of the [Stack Overflow Developer Survey](http://stackoverflow.com/research/developer-survey-2016), wrapped in a convenient R package for analysis.
+Results of the [Stack Overflow Developer Survey](http://stackoverflow.com/research/developer-survey-2016), wrapped in a convenient R package for easy analysis.
+
+Install using [devtools](https://github.com/hadley/devtools):
+
+
+```r
+devtools::install_github("dgrtwo/stacksurveyr")
+```
 
 ### Data
 
@@ -81,6 +88,12 @@ stack_schema
 #> Variables not shown: question <chr>, description <chr>.
 ```
 
+Each question has one of three types:
+
+* `single` columns have a single answer on a multiple choice question
+* `multi` columns allowed multiple answers, which are delimited by `; ` in the text
+* `inferred` columns are not themselves survey questions, but are processed versions of other answers
+
 ### Examples: Basic exploration
 
 There's a lot of simple questions we can answer using this data, particularly using the dplyr package. For example, we can examine the most common occupations among respondents:
@@ -111,7 +124,7 @@ We can also use `group_by` and `summarize` to connect between columns- for examp
 
 ```r
 salary_by_occupation <- stack_survey %>%
-  filter(!is.na(occupation), occupation != "other") %>%
+  filter(occupation != "other") %>%
   group_by(occupation) %>%
   summarize(average_salary = mean(salary_midpoint, na.rm = TRUE)) %>%
   arrange(desc(average_salary))
@@ -150,7 +163,7 @@ salary_by_occupation %>%
   coord_flip()
 ```
 
-![plot of chunk unnamed-chunk-6](README-unnamed-chunk-6-1.png)
+![plot of chunk salary_by_occupation_plot](README-figures/salary_by_occupation_plot-1.png)
 
 ### Examples: Multi-response answers
 
@@ -177,7 +190,7 @@ stack_schema %>%
 #> Variables not shown: question <chr>, description <chr>.
 ```
 
-In these cases, the responses are given delimited by `; `. For example, see the `tech_do` column (""Which of the following languages or technologies have you done extensive development with in the last year?"):  
+In these cases, the responses are given delimited by `; `. For example, see the `tech_do` column (""Which of the following languages or technologies have you done extensive development with in the last year?"):
 
 
 ```r
@@ -201,7 +214,7 @@ stack_survey %>%
 #> ..                                                                         ...
 ```
 
-Often, these columns are easier to work with and analyze when they are "unnested" into one user-answer pair per row. The package provides the `stack_multi` as a shortcut for that unnestting:
+Often, these columns are easier to work with and analyze when they are "unnested" into one user-answer pair per row. The package provides the `stack_multi` function as a shortcut for that unnestting:
 
 
 ```r
@@ -223,7 +236,7 @@ stack_multi("tech_do")
 #> ..           ...     ...                    ...
 ```
 
-For example, we could find the most common answers with:
+For example, we could find the most common answers:
 
 
 ```r
@@ -271,32 +284,7 @@ stack_survey %>%
 #> ..        ...   ...
 ```
 
-Or similarly, the most common developer environments:
-
-
-```r
-stack_survey %>%
-  filter(occupation == "Data scientist") %>%
-  inner_join(stack_multi("dev_environment"), by = "respondent_id") %>%
-  count(answer, sort = TRUE)
-#> Source: local data frame [23 x 2]
-#> 
-#>               answer     n
-#>                <chr> <int>
-#> 1                Vim   264
-#> 2          Notepad++   231
-#> 3            RStudio   226
-#> 4  IPython / Jupyter   223
-#> 5            Sublime   207
-#> 6            Eclipse   148
-#> 7            PyCharm   126
-#> 8           IntelliJ   117
-#> 9      Visual Studio   116
-#> 10             Emacs    81
-#> ..               ...   ...
-```
-
-We could find out the average age and salary of people using each technology, and compare them:
+Or we could find out the average age and salary of people using each technology, and compare them:
 
 
 ```r
@@ -312,11 +300,11 @@ stack_survey %>%
   scale_y_continuous(labels = dollar_format())
 ```
 
-![plot of chunk unnamed-chunk-13](README-unnamed-chunk-13-1.png)
+![plot of chunk age_salary_plot](README-figures/age_salary_plot-1.png)
 
 ### License
 
-This package, code, and examples is licensed under the GPL-3 license.
+The package, code, and examples are licensed under the GPL-3 license.
 
 The survey data itself (which is contained in the [data-raw](data-raw) directory and available online [here](http://stackoverflow.com/research)), is made available by Stack Exchange, Inc under the [Open Database License (ODbL)](http://opendatacommons.org/licenses/odbl/1.0/). Any rights in individual contents of the database are licensed under the [Database Contents License (ODbL)](http://opendatacommons.org/licenses/odbl/1.0/)
 

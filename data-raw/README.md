@@ -42,7 +42,7 @@ convert_range_factor <- function(x) {
   d <- data_frame(name = unique(x)) %>%
     filter(!is.na(name)) %>%
     mutate(num = extract_numeric(str_extract(name, "[\\d\\,]+"))) %>%
-    arrange(num, desc(name))
+    arrange(num, !str_detect("Less", name), desc(name))
   
   factor(x, levels = d$name, ordered = TRUE)
 }
@@ -52,41 +52,32 @@ agree_levels <- c("Disagree completely", "Disagree somewhat", "Neutral",
 important_levels <- c("I don't care about this", "This is somewhat important",
                       "This is very important" )
 
-stack_survey <- stack_survey %>%
-  mutate_each(funs(convert_range_factor), contains("_range"))
+stack_survey <- survey_raw %>%
+  mutate_each(funs(convert_range_factor), contains("_range")) %>%
   mutate_each(funs(factor(., levels = important_levels, ordered = TRUE)),
               starts_with("important_")) %>%
   mutate_each(funs(factor(., levels = agree_levels, ordered = TRUE)),
               starts_with("agree_"))
-```
 
-```
-## Error in lazyeval::as.lazy_dots(dots): could not find function "starts_with"
-```
+levels(stack_survey$job_satisfaction) <- c(
+  "I hate my job",
+  "I'm somewhat dissatisfied with my job",
+  "I'm neither satisfied nor dissatisfied",
+  "I'm somewhat satisfied with my job",
+  "I love my job",
+  "I don't have a job",
+  "Other (please specify)"
+)
 
-```r
+# also one transcription issue
+stack_survey <- stack_survey %>%
+  mutate(why_stack_overflow = str_replace_all(why_stack_overflow,
+                                              "whyso_onlinepresence",
+                                              "To maintain an online presence"))
+
+# finally, first column needs a name
 colnames(stack_survey)[1] <- "respondent_id"
 
-devtools::use_data(stack_survey)
+devtools::use_data(stack_survey, overwrite = TRUE)
 ```
 
-```
-## Error: stack_survey.rda already exists in /Users/drobinson/Dropbox/stacksurveyr/data. Use overwrite = TRUE to overwrite
-```
-
-### stack_multi 
-
-We also compute a tidied table of all multiple responses:
-
-
-```r
-multi_response_qs <- stack_schema$column[stack_schema$type == "multi"]
-
-stack_multi <- stack_survey %>%
-  select(respondent_id, one_of(multi_response_qs)) %>%
-  gather(column, answer, -respondent_id) %>%
-  filter(!is.na(answer)) %>%
-  unnest(answer = str_split(answer, "; "))
-
-devtools::use_data(stack_multi)
-```

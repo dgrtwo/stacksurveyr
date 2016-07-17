@@ -68,6 +68,13 @@ levels(stack_survey$job_satisfaction) <- c(
   "Other (please specify)"
 )
 
+# also one transcription issue
+stack_survey <- stack_survey %>%
+  mutate(why_stack_overflow = str_replace_all(why_stack_overflow,
+                                              "whyso_onlinepresence",
+                                              "To maintain an online presence"))
+
+# finally, first column needs a name
 colnames(stack_survey)[1] <- "respondent_id"
 
 devtools::use_data(stack_survey, overwrite = TRUE)

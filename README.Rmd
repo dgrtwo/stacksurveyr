@@ -4,7 +4,7 @@
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-",
+  fig.path = "README-figures/",
   message = FALSE,
   warning = FALSE
 )
@@ -17,7 +17,7 @@ theme_set(theme_bw())
 
 [![Travis-CI Build Status](https://travis-ci.org/.svg?branch=master)](https://travis-ci.org/)
 
-Results of the [Stack Overflow Developer Survey](http://stackoverflow.com/research/developer-survey-2016), wrapped in a convenient R package for analysis.
+Results of the [Stack Overflow Developer Survey](http://stackoverflow.com/research/developer-survey-2016), wrapped in a convenient R package for easy analysis.
 
 Install using [devtools](https://github.com/hadley/devtools):
 
@@ -43,6 +43,12 @@ The package also contains a schema data frame describing each of the columns in 
 stack_schema
 ```
 
+Each question has one of three types:
+
+* `single` columns have a single answer on a multiple choice question
+* `multi` columns allowed multiple answers, which are delimited by `; ` in the text
+* `inferred` columns are not themselves survey questions, but are processed versions of other answers
+
 ### Examples: Basic exploration
 
 There's a lot of simple questions we can answer using this data, particularly using the dplyr package. For example, we can examine the most common occupations among respondents:
@@ -66,7 +72,7 @@ salary_by_occupation
 
 This can be visualized in a bar plot:
 
-```{r fig.width = 8, fig.height = 6}
+```{r salary_by_occupation_plot, fig.width = 8, fig.height = 6}
 library(ggplot2)
 library(scales)
 
@@ -88,7 +94,7 @@ stack_schema %>%
   filter(type == "multi")
 ```
 
-In these cases, the responses are given delimited by `; `. For example, see the `tech_do` column (""Which of the following languages or technologies have you done extensive development with in the last year?"):  
+In these cases, the responses are given delimited by `; `. For example, see the `tech_do` column (""Which of the following languages or technologies have you done extensive development with in the last year?"):
 
 ```{r}
 stack_survey %>%
@@ -120,7 +126,7 @@ stack_survey %>%
 
 Or we could find out the average age and salary of people using each technology, and compare them:
 
-```{r}
+```{r age_salary_plot}
 stack_survey %>%
   inner_join(stack_multi("tech_do")) %>%
   group_by(answer) %>%

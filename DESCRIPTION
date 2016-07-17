@@ -12,11 +12,13 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
+Depends: R (>= 2.10)
 Suggests:
     testthat,
     knitr,
     rmarkdown,
-    scales
+    scales,
+    ggplot2
 Imports:
     dplyr,
     tidyr,

@@ -2,6 +2,6 @@
 ^\.Rproj\.user$
 ^data-raw$
 ^README\.Rmd$
-^README-.*\.png$
+^README-figures
 ^CONDUCT\.md$
 ^\.travis\.yml$
